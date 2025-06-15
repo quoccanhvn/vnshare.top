@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Free Code Generator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3735545030735491" crossorigin="anonymous"></script>
+
+  <style>
+    body {
+      font-family: 'Quicksand', sans-serif;
+      background: linear-gradient(to bottom, #f0f2f5, #e6ecf0);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+    }
+
+    .container {
+      background: white;
+      padding: 30px 20px;
+      border-radius: 15px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+      text-align: center;
+      max-width: 500px;
+      width: 100%;
+    }
+
+    h1 {
+      color: #4CAF50;
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+
+    #getCodeBtn, #countdownBtn {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s;
+      margin-top: 20px;
+    }
+
+    #getCodeBtn:hover {
+      background-color: #45a049;
+    }
+
+    #countdownBtn {
+      background-color: #888;
+      cursor: not-allowed;
+    }
+
+    .ads-container {
+      margin-top: 20px;
+      margin-bottom: 20px;
+    }
+
+    .g-recaptcha {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+    }
+
+    @media (max-width: 600px) {
+      #getCodeBtn, #countdownBtn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Receive Your Free Code</h1>
+
+    <!-- Ad trên nút đếm ngược -->
+    <div class="ads-container">
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-pub-3735545030735491"
+           data-ad-slot="5312653345"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    </div>
+
+    <button id="countdownBtn">Please wait... 20s</button>
+    <button id="getCodeBtn" onclick="submitWithCaptcha()" style="display: none;">Get Code</button>
+
+    <!-- Ad dưới nút Get Code -->
+    <div class="ads-container">
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-pub-3735545030735491"
+           data-ad-slot="5312653345"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    </div>
+
+    <div class="g-recaptcha" data-sitekey="6Lepxz0jAAAAAGMP0mI7AHeW1LyswXOIZBNmisCW"></div>
+  </div>
+
+  <script>
+    let seconds = 20;
+    const countdownBtn = document.getElementById("countdownBtn");
+    const getCodeBtn = document.getElementById("getCodeBtn");
+
+    const timer = setInterval(() => {
+      seconds--;
+      countdownBtn.textContent = `Please wait... ${seconds}s`;
+      if (seconds === 0) {
+        clearInterval(timer);
+        countdownBtn.style.display = 'none';
+        getCodeBtn.style.display = 'inline-block';
+      }
+    }, 1000);
+
+    function submitWithCaptcha() {
+      const captchaResponse = grecaptcha.getResponse();
+      if (!captchaResponse) {
+        Swal.fire('Please complete the reCAPTCHA first!');
+        return;
+      }
+      getCode();
+    }
+
+    async function refreshToken() {
+      try {
+        const loginRes = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: '{}'
+        });
+        const loginData = await loginRes.json();
+        if (!loginData.token) {
+          Swal.fire('Login failed!');
+          return null;
+        }
+        localStorage.setItem('token', loginData.token);
+        return loginData.token;
+      } catch (err) {
+        Swal.fire('Login failed!');
+        return null;
+      }
+    }
+
+    async function getCode() {
+      getCodeBtn.style.display = 'none';
+      let token = localStorage.getItem('token');
+
+      async function fetchCode() {
+        return await fetch('/api/code', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      }
+
+      if (!token) {
+        token = await refreshToken();
+        if (!token) return;
+      }
+
+      try {
+        let res = await fetchCode();
+        if (res.status === 403) {
+          token = await refreshToken();
+          if (!token) return;
+          res = await fetchCode();
+        }
+
+        const data = await res.json();
+
+        if (!res.ok && res.status === 429) {
+          showCooldown();
+          return;
+        }
+
+        if (data.error) {
+          Swal.fire(data.error);
+          return;
+        }
+
+        localStorage.setItem('lastCodeTime', Date.now());
+
+        Swal.fire({
+          title: '🎉 Your Code!',
+          html: `<strong id="copyCode" style="color:#007BFF;font-size:24px;cursor:pointer;">${data.code}</strong><br/><small>(Click the code to copy)</small>`,
+          icon: 'success',
+          confirmButtonText: 'OK',
+          didOpen: () => {
+            const el = document.getElementById("copyCode");
+            el.addEventListener('click', async () => {
+              await navigator.clipboard.writeText(data.code);
+              el.innerHTML = `${data.code} ✅`;
+            });
+          }
+        });
+
+      } catch (err) {
+        Swal.fire('Error retrieving code. Try again!');
+      }
+    }
+
+    function showCooldown() {
+      const lastTime = localStorage.getItem('lastCodeTime');
+      const now = Date.now();
+      const cooldown = 60 * 1000;
+      let remaining = 60;
+
+      if (lastTime && now - parseInt(lastTime) < cooldown) {
+        remaining = Math.ceil((cooldown - (now - parseInt(lastTime))) / 1000);
+      } else {
+        localStorage.setItem('lastCodeTime', now);
+      }
+
+      Swal.fire({
+        title: '⚠️ You’ve requested too many codes!',
+        html: `Please try again in <b><span id="timer">${remaining}</span>s</b>.`,
+        icon: 'warning',
+        showConfirmButton: false
+      });
+
+      const countdown = setInterval(() => {
+        remaining--;
+        const el = document.getElementById("timer");
+        if (el) el.textContent = remaining;
+        if (remaining <= 0) {
+          clearInterval(countdown);
+          Swal.close();
+          getCodeBtn.style.display = 'inline-block';
+        }
+      }, 1000);
+    }
+  </script>
+</body>
+</html>
