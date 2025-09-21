@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Get Code</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --secondary-color: #388E3C;
+            --background-start: #1e3c72;
+            --background-end: #2a5298;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --light-text-color: #fff;
+            --shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(to right, var(--background-start), var(--background-end));
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: var(--text-color);
+        }
+        .box {
+            background: var(--card-bg);
+            padding: 50px 40px;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            max-width: 800px;
+            width: 100%;
+            position: relative;
+            transform: translateY(-20px);
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        h2 {
+            font-size: 2.2em;
+            font-weight: 700;
+            color: var(--secondary-color);
+            margin-top: 0;
+            margin-bottom: 25px;
+            letter-spacing: -0.5px;
+        }
+        .code-list-container {
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            background-color: #f9f9f9;
+        }
+        #codesList {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            text-align: left;
+        }
+        #codesList li {
+            background: #e8f5e9;
+            margin-bottom: 10px;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #2e7d32;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        #codesList li:hover {
+            background: #dcedc8;
+            transform: scale(1.02);
+        }
+        .notice-box {
+            background: #f1f8e9;
+            border: 1px solid #c8e6c9;
+            padding: 25px;
+            margin-top: 35px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            text-align: left;
+            color: #385d3a;
+            box-shadow: inset 0 0 10px rgba(100, 150, 100, 0.1);
+        }
+        .notice-box h4 {
+            margin-top: 0;
+            color: var(--secondary-color);
+            font-weight: 600;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .notice-box ul {
+            margin: 0;
+            padding-left: 20px;
+            list-style-type: none;
+        }
+        .notice-box ul li {
+            margin-bottom: 12px;
+            position: relative;
+            padding-left: 25px;
+        }
+        .notice-box ul li:before {
+            content: "•";
+            color: var(--primary-color);
+            font-size: 1.5em;
+            position: absolute;
+            left: 0;
+            top: -2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2>🎉 ACTIVATION CODES</h2>
+        <div class="code-list-container">
+            <ul id="codesList">
+                </ul>
+        </div>
+        <div class="notice-box">
+            <h4>⚠️ Important Notice</h4>
+            <p>This website provides free temporary email accounts intended solely for learning, testing, and research purposes.</p>
+            <ul>
+                <li>This is a <strong>temporary email account</strong> — do <strong>not store important or personal data</strong>.</li>
+                <li>These accounts can be <strong>deleted at any time by Microsoft</strong> without prior notice.</li>
+                <li>Do not use these accounts to register for important services or to store sensitive, financial, or confidential information.</li>
+                <li>Due to the public and free nature of this system, it is well known worldwide and often targeted by spammers.</li>
+                <li>This may result in the accounts being disabled at any time due to policy violations.</li>
+            </ul>
+            <p><strong>Disclaimer:</strong> I only provide a free playground. I do not take responsibility for any usage or data associated with the shared accounts. Thank you for using it responsibly!</p>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const codeList = document.getElementById('codesList');
+            if (codeList) {
+                codeList.addEventListener('click', (event) => {
+                    const clickedElement = event.target;
+                    if (clickedElement.tagName === 'LI') {
+                        const code = clickedElement.textContent;
+                        navigator.clipboard.writeText(code)
+                            .then(() => {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Đã sao chép!',
+                                    text: 'Mã đã được sao chép vào clipboard.',
+                                    toast: true,
+                                    position: 'top-end',
+                                    showConfirmButton: false,
+                                    timer: 2000,
+                                    timerProgressBar: true
+                                });
+                            })
+                            .catch(err => {
+                                console.error('Failed to copy text: ', err);
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Lỗi',
+                                    text: 'Không thể sao chép mã. Vui lòng thử lại thủ công.',
+                                });
+                            });
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
